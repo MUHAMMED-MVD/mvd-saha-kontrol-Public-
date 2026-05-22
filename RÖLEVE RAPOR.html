@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Elektrik Röleve Raporu</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface2: #f8f9fa;
+    --border: #e2e5e9;
+    --border2: #d0d5dd;
+    --accent: #c8102e;
+    --accent-light: #fdf0f2;
+    --accent-rgb: 200, 16, 46;
+    --text: #1a1d23;
+    --text2: #6b7280;
+    --text3: #9ca3af;
+    --green: #16a34a;
+    --red: #dc2626;
+    --blue: #2563eb;
+    --sans: 'Inter', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding-bottom: 100px;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 3px solid var(--accent);
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-upload-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    border: 2px dashed var(--border2);
+    background: var(--surface2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+  }
+  .logo-upload-box:hover { border-color: var(--accent); background: #fff; }
+  .logo-upload-box img { width:100%; height:100%; object-fit:contain; border-radius:6px; }
+  .logo-placeholder-icon { font-size: 20px; }
+  .logo-placeholder-text { font-size: 8px; color: var(--text3); margin-top: 1px; font-family: var(--mono); letter-spacing: 0.5px; }
+  .brand-input-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+  .brand-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-family: var(--mono);
+  }
+  #brandName {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    border: none;
+    border-bottom: 2px dashed var(--border2);
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-family: var(--sans);
+    padding: 1px 2px;
+  }
+  #brandName:focus { border-bottom-color: var(--accent); }
+  .header-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text2);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .header-right {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* TABS */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 16px;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 11px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* PROGRESS */
+  .progress-wrap {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar { flex:1; height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.3s; }
+  .progress-text { font-family:var(--mono); font-size:10px; color:var(--text3); white-space:nowrap; }
+
+  /* SECTION CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 12px 12px 0;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .card-header-left { display:flex; align-items:center; gap:10px; }
+  .section-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .card-badge {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--border);
+    color: var(--text2);
+  }
+  .card-badge.done { background: #dcfce7; color: var(--green); }
+  .card-toggle { color: var(--text3); font-size: 14px; transition: transform 0.2s; }
+  .card-toggle.open { transform: rotate(180deg); }
+  .card-body { display: none; }
+  .card-body.open { display: block; }
+
+  /* FIELD ROW */
+  .field-row {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .field-label span {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+    margin-right: 4px;
+  }
+
+  /* TEXT INPUT */
+  .field-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: var(--sans);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-input:focus { border-color: var(--accent); background: #fff; }
+  textarea.field-input { resize: none; min-height: 70px; line-height: 1.5; }
+
+  /* OPTIONS (3 buttons) */
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .opt-btn {
+    padding: 8px 4px;
+    border: 1.5px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+    font-weight: 500;
+  }
+  .opt-btn:active { transform: scale(0.97); }
+  .opt-btn.sel-evet { border-color: var(--green); background: #dcfce7; color: var(--green); }
+  .opt-btn.sel-hayir { border-color: var(--red); background: #fee2e2; color: var(--red); }
+  .opt-btn.sel-na { border-color: #9ca3af; background: #f3f4f6; color: #6b7280; }
+
+  /* PHOTO */
+  .photo-section { margin: 12px 12px 0; }
+  .photo-upload-area {
+    background: var(--surface);
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 10px;
+  }
+  .photo-upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+  .photo-upload-area input { display: none; }
+  .photo-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-upload-text { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .photo-upload-sub { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .photo-thumb {
+    position: relative;
+    border-radius: 6px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-remove {
+    position: absolute; top: 5px; right: 5px;
+    background: rgba(0,0,0,0.55);
+    color: #fff; border: none; border-radius: 50%;
+    width: 22px; height: 22px; font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .photo-caption-input {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.55);
+    border: none; color: #fff;
+    font-size: 11px; padding: 4px 8px;
+    width: 100%; outline: none; font-family: var(--mono);
+  }
+  .photo-caption-input::placeholder { color: rgba(255,255,255,0.6); }
+
+  /* META CARD */
+  .meta-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 12px 12px 0;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .meta-card-header {
+    background: var(--accent);
+    padding: 10px 14px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  .meta-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  .meta-item:nth-child(even) { border-right: none; }
+  .meta-item.full { grid-column: 1/-1; border-right: none; }
+  .meta-item label {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+  }
+  .meta-item input, .meta-item select {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border2);
+    color: var(--text);
+    padding: 4px 0;
+    font-size: 13px;
+    font-family: var(--sans);
+    outline: none;
+    font-weight: 500;
+  }
+  .meta-item input:focus, .meta-item select:focus {
+    border-bottom-color: var(--accent);
+  }
+
+  /* BOTTOM BAR */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex; gap: 8px;
+    z-index: 100;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+  }
+  .btn {
+    flex: 1; padding: 13px;
+    border: none; border-radius: 8px;
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #fff; flex: 2; }
+  .btn-primary:hover { background: #a80d26; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 200;
+    align-items: flex-end; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px 16px 0 0;
+    border-top: 3px solid var(--accent);
+    width: 100%; max-height: 80vh;
+    overflow-y: auto; padding: 20px;
+    animation: slideUp 0.25s ease;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.12);
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .modal h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .modal p { font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: var(--text2); font-size: 12px; }
+  .pill { font-family:var(--mono); font-size:11px; padding:3px 10px; border-radius:10px; font-weight:600; }
+  .pill-red { background:#fee2e2; color:var(--red); }
+  .pill-green { background:#dcfce7; color:var(--green); }
+  .pill-gray { background:#f3f4f6; color:#6b7280; }
+  .pill-accent { background:var(--accent-light); color:var(--accent); }
+  .spinner { width:28px;height:28px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px; }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .generating { text-align:center; padding:20px; font-size:12px; color:var(--text2); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <!-- Logo upload -->
+  <div class="logo-upload-box" id="logoBox" onclick="document.getElementById('logoInput').click()" title="Logo yükle">
+    <div id="logoPlaceholder">
+      <div class="logo-placeholder-icon">🖼</div>
+      <div class="logo-placeholder-text">LOGO</div>
+    </div>
+    <img id="logoImg" src="" alt="logo" style="display:none;width:100%;height:100%;object-fit:contain;border-radius:6px;padding:4px;">
+    <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="loadLogo(event)">
+  </div>
+  <!-- Brand + title -->
+  <div class="brand-input-wrap">
+    <span class="brand-label">Marka Adı</span>
+    <input type="text" id="brandName" placeholder="Marka Adı giriniz..." value="">
+    <span class="header-title">Elektrik Röleve Raporu</span>
+  </div>
+  <div class="header-right" style="display:flex;gap:6px;align-items:center;">
+    <div style="position:relative;display:flex;align-items:center;" title="Tema rengi seç">
+      <input type="color" id="accentPicker" value="#c8102e"
+        style="width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;padding:2px;background:var(--surface2);border:1px solid var(--border2);"
+        oninput="changeAccent(this.value)">
+    </div>
+    <button class="btn btn-secondary" style="padding:7px 12px;font-size:11px;" onclick="openSummary()">📋 Özet</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">📋 Genel Bilgiler</div>
+  <div class="tab" onclick="switchTab(1)">⚡ Elektrik Kriterleri</div>
+  <div class="tab" onclick="switchTab(2)">📷 Fotoğraflar</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">0 / 0 dolduruldu</div>
+</div>
+
+<!-- TAB 0: GENEL BİLGİLER -->
+<div id="tab-0" class="tab-content active">
+
+  <div class="meta-card">
+    <div class="meta-card-header">📄 Rapor Bilgileri</div>
+    <div class="meta-grid">
+      <div class="meta-item full">
+        <label>Proje Adı</label>
+        <input type="text" id="f-proje" placeholder="Örn: Sivas İvapark AVM" oninput="updateProgress()">
+      </div>
+      <div class="meta-item full">
+        <label>Röleve Yeri</label>
+        <input type="text" id="f-yer" placeholder="İlçe / İl" oninput="updateProgress()">
+      </div>
+      <div class="meta-item">
+        <label>Tadilat Tanımı</label>
+        <select id="f-tadilat" onchange="updateProgress()">
+          <option value="">Seçiniz</option>
+          <option value="YENİ">YENİ</option>
+          <option value="TADİLAT">TADİLAT</option>
+          <option value="RESTORASYON">RESTORASYON</option>
+        </select>
+      </div>
+      <div class="meta-item">
+        <label>Röleve Tarihi</label>
+        <input type="date" id="f-roleve-tarih" oninput="updateProgress()">
+      </div>
+      <div class="meta-item">
+        <label>Yayın Tarihi</label>
+        <input type="date" id="f-yayin-tarih" oninput="updateProgress()">
+      </div>
+      <div class="meta-item">
+        <label>Revizyon No</label>
+        <input type="text" id="f-revno" placeholder="R0" oninput="updateProgress()">
+      </div>
+      <div class="meta-item">
+        <label>Raporu Hazırlayan Firma</label>
+        <input type="text" id="f-hazirlayan" placeholder="Firma adı" oninput="updateProgress()">
+      </div>
+      <div class="meta-item">
+        <label>Katılanlar</label>
+        <input type="text" id="f-katilanlar" placeholder="Ad Soyad (Firma), ..." oninput="updateProgress()">
+      </div>
+    </div>
+  </div>
+
+  <div class="meta-card" style="margin-top:10px;">
+    <div class="meta-card-header">🏢 Firmalar</div>
+    <div class="meta-grid">
+      <div class="meta-item full">
+        <label>Mimari Firma</label>
+        <input type="text" id="f-mimari" placeholder="Firma adı" oninput="updateProgress()">
+      </div>
+      <div class="meta-item full">
+        <label>Mekanik Firma</label>
+        <input type="text" id="f-mekanik" placeholder="Firma adı" oninput="updateProgress()">
+      </div>
+      <div class="meta-item full">
+        <label>Elektrik Firma</label>
+        <input type="text" id="f-elektrik" placeholder="Firma adı" oninput="updateProgress()">
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB 1: ELEKTRİK KRİTERLERİ -->
+<div id="tab-1" class="tab-content">
+
+  <!-- 1. ENERJİ TEMİNİ -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard('c1')">
+      <div class="card-header-left">
+        <div class="section-dot"></div>
+        <span class="card-title">1. Enerji Temini</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="card-badge" id="badge-c1"></span>
+        <span class="card-toggle open" id="tog-c1">▾</span>
+      </div>
+    </div>
+    <div class="card-body open" id="body-c1">
+      <div class="field-row">
+        <div class="field-label"><span>1.1</span>Enerji Temini Tanımı</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-1-1','avm',this)">AVM</button>
+          <button class="opt-btn" onclick="setOpt('e-1-1','bina',this)">BİNA</button>
+          <button class="opt-btn" onclick="setOpt('e-1-1','diger',this)">DİĞER</button>
+        </div>
+        <textarea class="field-input" id="e-1-1-txt" placeholder="Açıklama..." rows="2" oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>1.2</span>Enerji Temini Şekli (Sayaç Konumu)</div>
+        <textarea class="field-input" id="e-1-2" placeholder="Örn: Şaft odasındaki sayaç panosundan..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>1.3</span>Şalter Bilgisi</div>
+        <input class="field-input" id="e-1-3" type="text" placeholder="Marka, model, akım değeri (A)" oninput="updateProgress()">
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>1.4</span>Besleme Kablosu</div>
+        <input class="field-input" id="e-1-4" type="text" placeholder="Kesit ve tip (Örn: 3x185 mm² N2XH)" oninput="updateProgress()">
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>1.5</span>Genel Açıklama / Kararlar</div>
+        <textarea class="field-input" id="e-1-5" placeholder="Röleve ziyaretinde alınan kararlar..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SAYAÇ -->
+  <div class="card" style="margin-top:10px;">
+    <div class="card-header" onclick="toggleCard('c2')">
+      <div class="card-header-left">
+        <div class="section-dot"></div>
+        <span class="card-title">2. Sayaç ve Faturalandırma</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="card-badge" id="badge-c2"></span>
+        <span class="card-toggle" id="tog-c2">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-c2">
+      <div class="field-row">
+        <div class="field-label"><span>2.1</span>Sayaç Yeri</div>
+        <input class="field-input" id="e-2-1" type="text" placeholder="Örn: Şaft odası AVM sayaç panosu" oninput="updateProgress()">
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>2.2</span>Faturalandırma Detayı</div>
+        <textarea class="field-input" id="e-2-2" placeholder="Uzaktan okuma, fatura kesme yöntemi..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>2.3</span>Talep Edilen Sayaç</div>
+        <input class="field-input" id="e-2-3" type="text" placeholder="Marka ve model" oninput="updateProgress()">
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. KOMPANZASYON -->
+  <div class="card" style="margin-top:10px;">
+    <div class="card-header" onclick="toggleCard('c3')">
+      <div class="card-header-left">
+        <div class="section-dot"></div>
+        <span class="card-title">3. Kompanzasyon</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="card-badge" id="badge-c3"></span>
+        <span class="card-toggle" id="tog-c3">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-c3">
+      <div class="field-row">
+        <div class="field-label"><span>3.1</span>Kompanzasyon Talebi</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-3-1','evet',this)">✓ VAR</button>
+          <button class="opt-btn" onclick="setOpt('e-3-1','hayir',this)">✗ YOK</button>
+          <button class="opt-btn" onclick="setOpt('e-3-1','na',this)">— N/A</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>3.2</span>Açıklama</div>
+        <textarea class="field-input" id="e-3-2" placeholder="Kompanzasyon detayları..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. JENERATÖR -->
+  <div class="card" style="margin-top:10px;">
+    <div class="card-header" onclick="toggleCard('c4')">
+      <div class="card-header-left">
+        <div class="section-dot"></div>
+        <span class="card-title">4. Jeneratör</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="card-badge" id="badge-c4"></span>
+        <span class="card-toggle" id="tog-c4">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-c4">
+      <div class="field-row">
+        <div class="field-label"><span>4.1</span>Jeneratör Kapsamı</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-4-1','merkezi',this)">MERKEZİ</button>
+          <button class="opt-btn" onclick="setOpt('e-4-1','lokal',this)">LOKAL</button>
+          <button class="opt-btn" onclick="setOpt('e-4-1','yok',this)">YOK</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>4.2</span>Besleme Yüzdesi</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-4-2','100',this)">%100</button>
+          <button class="opt-btn" onclick="setOpt('e-4-2','50',this)">%50</button>
+          <button class="opt-btn" onclick="setOpt('e-4-2','kritik',this)">KRİTİK</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>4.3</span>Açıklama</div>
+        <textarea class="field-input" id="e-4-3" placeholder="Jeneratör detayları..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ZAYIF AKIM -->
+  <div class="card" style="margin-top:10px;">
+    <div class="card-header" onclick="toggleCard('c5')">
+      <div class="card-header-left">
+        <div class="section-dot"></div>
+        <span class="card-title">5. Zayıf Akım Sistemleri</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="card-badge" id="badge-c5"></span>
+        <span class="card-toggle" id="tog-c5">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-c5">
+      <div class="field-row">
+        <div class="field-label"><span>5.1</span>Zayıf Akım Dağıtım Kutusu</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-5-1','var',this)">✓ MEVCUT</button>
+          <button class="opt-btn" onclick="setOpt('e-5-1','yok',this)">✗ YOK</button>
+          <button class="opt-btn" onclick="setOpt('e-5-1','na',this)">— N/A</button>
+        </div>
+        <textarea class="field-input" id="e-5-1-txt" placeholder="Konum ve detay..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>5.2</span>Data – Telefon Altyapısı</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-5-2','var',this)">✓ MEVCUT</button>
+          <button class="opt-btn" onclick="setOpt('e-5-2','yok',this)">✗ YOK</button>
+          <button class="opt-btn" onclick="setOpt('e-5-2','na',this)">— N/A</button>
+        </div>
+        <textarea class="field-input" id="e-5-2-txt" placeholder="Kablo tipi ve detay..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>5.3</span>Yangın Algılama Sistemi</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-5-3','var',this)">✓ MEVCUT</button>
+          <button class="opt-btn" onclick="setOpt('e-5-3','yok',this)">✗ YOK</button>
+          <button class="opt-btn" onclick="setOpt('e-5-3','na',this)">— N/A</button>
+        </div>
+        <textarea class="field-input" id="e-5-3-txt" placeholder="Panel markası, kablo tipi..." oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>5.4</span>Acil Anons Sistemi</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-5-4','var',this)">✓ MEVCUT</button>
+          <button class="opt-btn" onclick="setOpt('e-5-4','yok',this)">✗ YOK</button>
+          <button class="opt-btn" onclick="setOpt('e-5-4','na',this)">— N/A</button>
+        </div>
+        <textarea class="field-input" id="e-5-4-txt" placeholder="Kablo tipi, loop sayısı..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. DİĞER / SONUÇLAR -->
+  <div class="card" style="margin-top:10px;">
+    <div class="card-header" onclick="toggleCard('c6')">
+      <div class="card-header-left">
+        <div class="section-dot"></div>
+        <span class="card-title">6. Diğer Altyapı & Sonuçlar</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="card-badge" id="badge-c6"></span>
+        <span class="card-toggle" id="tog-c6">▾</span>
+      </div>
+    </div>
+    <div class="card-body" id="body-c6">
+      <div class="field-row">
+        <div class="field-label"><span>6.1</span>AVM Teknik Şartnamesi</div>
+        <div class="options">
+          <button class="opt-btn" onclick="setOpt('e-6-1','var',this)">✓ MEVCUT</button>
+          <button class="opt-btn" onclick="setOpt('e-6-1','yok',this)">✗ YOK</button>
+          <button class="opt-btn" onclick="setOpt('e-6-1','na',this)">— N/A</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>6.2</span>Röleve Ziyareti Sonuçları</div>
+        <textarea class="field-input" id="e-6-2" placeholder="Ziyarette alınan kararlar, tespitler..." rows="4" oninput="updateProgress()"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field-label"><span>6.3</span>Ek Notlar</div>
+        <textarea class="field-input" id="e-6-3" placeholder="Diğer önemli bilgiler..." oninput="updateProgress()"></textarea>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB 2: FOTOĞRAFLAR -->
+<div id="tab-2" class="tab-content">
+  <div class="photo-section">
+    <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+      <input type="file" id="photoInput" multiple accept="image/*" onchange="handlePhotos(event)">
+      <div class="photo-icon">📸</div>
+      <div class="photo-upload-text">Fotoğraf Ekle</div>
+      <div class="photo-upload-sub">Galeri veya kamera — çoklu seçim yapılabilir</div>
+    </div>
+    <div class="photo-grid" id="photoGrid"></div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn btn-secondary" onclick="clearAll()">🗑 Temizle</button>
+  <button class="btn btn-primary" onclick="openSummary()">📄 PDF Oluştur</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+const opts = {}; // field-id -> value
+const photos = []; // {dataUrl, pdfUrl, name, caption}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('active', i===idx));
+}
+
+// ── CARDS ────────────────────────────────────────────────────────────────────
+function toggleCard(id) {
+  document.getElementById('body-'+id).classList.toggle('open');
+  document.getElementById('tog-'+id).classList.toggle('open');
+}
+
+// ── OPTIONS ──────────────────────────────────────────────────────────────────
+function setOpt(fieldId, val, btn) {
+  const prev = opts[fieldId];
+  if (prev === val) {
+    delete opts[fieldId];
+    btn.closest('.options').querySelectorAll('.opt-btn').forEach(b => b.className='opt-btn');
+  } else {
+    opts[fieldId] = val;
+    btn.closest('.options').querySelectorAll('.opt-btn').forEach(b => b.className='opt-btn');
+    btn.classList.add(val==='evet'||val==='var'||val==='avm'||val==='merkezi'||val==='100' ? 'sel-evet' :
+                      val==='hayir'||val==='yok' ? 'sel-hayir' : 'sel-na');
+  }
+  updateProgress();
+}
+
+// ── PROGRESS ─────────────────────────────────────────────────────────────────
+const REQUIRED_FIELDS = [
+  'f-proje','f-yer','f-roleve-tarih',
+  'e-1-2','e-1-3','e-1-4',
+  'e-2-1','e-2-2',
+  'e-6-2'
+];
+const REQUIRED_OPTS = ['e-1-1','e-3-1','e-4-1','e-5-1','e-5-2','e-5-3','e-5-4','e-6-1'];
+
+function updateProgress() {
+  const total = REQUIRED_FIELDS.length + REQUIRED_OPTS.length;
+  let done = 0;
+  REQUIRED_FIELDS.forEach(id => { const el=document.getElementById(id); if(el&&el.value.trim()) done++; });
+  REQUIRED_OPTS.forEach(id => { if(opts[id]) done++; });
+  const pct = Math.round(done/total*100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressText').textContent = `${done} / ${total} dolduruldu`;
+}
+
+// ── PHOTOS ───────────────────────────────────────────────────────────────────
+function compressImage(dataUrl, maxW, maxH, quality, cb) {
+  const img = new Image();
+  img.onload = () => {
+    let w=img.width, h=img.height;
+    if(w>maxW||h>maxH){ const r=Math.min(maxW/w,maxH/h); w=Math.round(w*r); h=Math.round(h*r); }
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    cb(c.toDataURL('image/jpeg',quality));
+  };
+  img.src=dataUrl;
+}
+
+function handlePhotos(e) {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      compressImage(ev.target.result, 400, 400, 0.75, thumb => {
+        compressImage(ev.target.result, 1200, 1200, 0.5, pdf => {
+          const idx = photos.length;
+          photos.push({ dataUrl:thumb, pdfUrl:pdf, name:file.name, caption:`F${idx+1}` });
+          renderPhotos();
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+}
+
+function renderPhotos() {
+  document.getElementById('photoGrid').innerHTML = photos.map((p,i) => `
+    <div class="photo-thumb">
+      <img src="${p.dataUrl}">
+      <button class="photo-remove" onclick="removePhoto(${i})">×</button>
+      <input class="photo-caption-input" value="${p.caption}" placeholder="Başlık (F${i+1})"
+        oninput="photos[${i}].caption=this.value">
+    </div>`).join('');
+}
+
+function removePhoto(i) { photos.splice(i,1); renderPhotos(); }
+
+// ── CLEAR ────────────────────────────────────────────────────────────────────
+function clearAll() {
+  if(!confirm('Tüm veriler silinsin mi?')) return;
+  document.querySelectorAll('.field-input').forEach(el => el.value='');
+  document.querySelectorAll('.opt-btn').forEach(b => b.className='opt-btn');
+  Object.keys(opts).forEach(k => delete opts[k]);
+  photos.length=0; renderPhotos(); updateProgress();
+}
+
+// ── SUMMARY ──────────────────────────────────────────────────────────────────
+function openSummary() {
+  const proje = document.getElementById('f-proje').value||'–';
+  document.getElementById('modalContent').innerHTML = `
+    <h3>📋 Rapor Özeti</h3>
+    <p>${proje}</p>
+    <div class="summary-row"><span class="summary-label">Proje</span><span>${proje}</span></div>
+    <div class="summary-row"><span class="summary-label">Yer</span><span>${document.getElementById('f-yer').value||'–'}</span></div>
+    <div class="summary-row"><span class="summary-label">Tarih</span><span>${document.getElementById('f-roleve-tarih').value||'–'}</span></div>
+    <div class="summary-row"><span class="summary-label">Fotoğraf</span><span class="pill pill-accent">${photos.length} adet</span></div>
+    <div style="display:flex;gap:8px;margin-top:18px;">
+      <button class="btn btn-secondary" onclick="closeModal()" style="flex:1">Geri</button>
+      <button class="btn btn-primary" onclick="generatePDF()" style="flex:2">📄 PDF İndir</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ── LOGO ─────────────────────────────────────────────────────────────────────
+let logoDataUrl = null;
+
+function loadLogo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logoDataUrl = ev.target.result;
+    const img = document.getElementById('logoImg');
+    img.src = logoDataUrl;
+    img.style.display = 'block';
+    document.getElementById('logoPlaceholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+// ── ACCENT COLOR ─────────────────────────────────────────────────────────────
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r, g, b];
+}
+
+function lightenHex(hex, amount=0.93) {
+  const [r,g,b] = hexToRgb(hex);
+  const mix = (c) => Math.round(c + (255-c)*amount);
+  return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+}
+
+function changeAccent(hex) {
+  const root = document.documentElement;
+  root.style.setProperty('--accent', hex);
+  root.style.setProperty('--accent-light', lightenHex(hex));
+}
+
+// ── TR FIX ───────────────────────────────────────────────────────────────────
+function trFix(str) {
+  if(!str) return '';
+  return String(str)
+    .replace(/\u0130/g,'I').replace(/\u0131/g,'i')
+    .replace(/\u011e/g,'G').replace(/\u011f/g,'g')
+    .replace(/\u015e/g,'S').replace(/\u015f/g,'s')
+    .replace(/\u00dc/g,'U').replace(/\u00fc/g,'u')
+    .replace(/\u00d6/g,'O').replace(/\u00f6/g,'o')
+    .replace(/\u00c7/g,'C').replace(/\u00e7/g,'c');
+}
+
+// ── PDF ──────────────────────────────────────────────────────────────────────
+async function generatePDF() {
+  document.getElementById('modalContent').innerHTML = `<div class="generating"><div class="spinner"></div>PDF hazirlaniyor...</div>`;
+  await new Promise(r=>setTimeout(r,80));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'p', unit:'mm', format:'a4'});
+    const W=210, H=297, ML=14, MR=14, MT=16;
+    let y=MT;
+
+    const brand = trFix(document.getElementById('brandName').value || 'MARKA ADI');
+    const accentRGB = hexToRgb(document.getElementById('accentPicker').value);
+    const grayRGB = [107, 114, 128];
+    const darkRGB = [26, 29, 35];
+    const lightGray = [245, 246, 248];
+
+    function newPage() {
+      doc.addPage();
+      y = MT;
+      footer();
+    }
+    function checkY(h) { if(y+h > H-16) newPage(); }
+
+    function footer() {
+      const pg = doc.internal.getCurrentPageInfo().pageNumber;
+      doc.setFillColor(248,249,250);
+      doc.rect(0,H-8,W,8,'F');
+      doc.setDrawColor(226,229,233);
+      doc.setLineWidth(0.3);
+      doc.line(0,H-8,W,H-8);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...grayRGB);
+      doc.text(trFix('TD.INS.FRM.03-R0'), ML, H-3);
+      doc.text(`Sayfa ${pg}`, W-ML, H-3, {align:'right'});
+      doc.text(trFix(brand+' – Elektrik Roleve Raporu'), W/2, H-3, {align:'center'});
+    }
+
+    // ── COVER ──
+    // Top red bar
+    doc.setFillColor(...accentRGB);
+    doc.rect(0,0,W,18,'F');
+
+    // Brand logo or name in header bar
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, 'JPEG', ML, 2, 40, 14);
+      } catch(e) {
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(18);
+        doc.setTextColor(255,255,255);
+        doc.text(brand, ML, 13);
+      }
+    } else {
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(20);
+      doc.setTextColor(255,255,255);
+      doc.text(brand, ML, 13);
+    }
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(255,200,200);
+    doc.text('ELEKTRIK ROLEVE RAPORU', W-ML, 12, {align:'right'});
+
+    y = 26;
+
+    // Rapor bilgileri table
+    const meta = [
+      ['ROLEVE TARIHI', document.getElementById('f-roleve-tarih').value||'–'],
+      ['YAYIN TARIHI', document.getElementById('f-yayin-tarih').value||'–'],
+      ['REVIZYON NO', document.getElementById('f-revno').value||'–'],
+    ];
+
+    // Right side info box
+    let bx = W-MR-75, by = 20;
+    doc.setDrawColor(...[226,229,233]);
+    doc.setLineWidth(0.3);
+    doc.rect(bx, by, 75, meta.length*8, 'S');
+    meta.forEach(([label, val], i) => {
+      const ry = by + i*8;
+      if(i>0){ doc.line(bx, ry, bx+75, ry); }
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5); doc.setTextColor(...grayRGB);
+      doc.text(trFix(label), bx+3, ry+5);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...darkRGB);
+      doc.text(trFix(val), bx+75-3, ry+5, {align:'right'});
+    });
+
+    // Main info
+    const proje = trFix(document.getElementById('f-proje').value||'–');
+    const yer = trFix(document.getElementById('f-yer').value||'–');
+    const tadilat = trFix(document.getElementById('f-tadilat').value||'–');
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...grayRGB);
+    doc.text('Proje Adi:', ML, 26);
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...darkRGB);
+    doc.text(proje, ML, 33);
+
+    doc.setDrawColor(226,229,233); doc.line(ML, 36, W-MR, 36);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grayRGB);
+    doc.text('Roleve Yeri:', ML, 42);
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(...darkRGB);
+    doc.text(yer, ML, 48);
+
+    doc.line(ML, 51, W-MR, 51);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grayRGB);
+    doc.text('Tadilat Tanimi:', ML, 57);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...darkRGB);
+    doc.text(tadilat, ML, 63);
+
+    // Two column: Raporu Hazırlayan + Katılanlar
+    const halfW = (W-ML-MR)/2 - 3;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grayRGB);
+    doc.text('Raporu Hazirlayan Firma:', ML, 70);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    const hazirlayan = doc.splitTextToSize(trFix(document.getElementById('f-hazirlayan').value||'–'), halfW);
+    doc.text(hazirlayan, ML, 77);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grayRGB);
+    doc.text('Katilanlar:', ML+halfW+6, 70);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    const katilanlar = doc.splitTextToSize(trFix(document.getElementById('f-katilanlar').value||'–'), halfW);
+    doc.text(katilanlar, ML+halfW+6, 77);
+
+    y = 77 + Math.max(hazirlayan.length, katilanlar.length)*5 + 5;
+    doc.line(ML, y, W-MR, y); y += 6;
+
+    // Firmalar
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grayRGB);
+    doc.text('Raporu Hazirlayan Firmalar:', ML, y); y+=6;
+    [['Mimari:', 'f-mimari'],['Mekanik:', 'f-mekanik'],['Elektrik:', 'f-elektrik']].forEach(([lbl,id]) => {
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...grayRGB);
+      doc.text(lbl, ML+2, y);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...darkRGB);
+      doc.text(trFix(document.getElementById(id).value||''), ML+22, y);
+      y+=6;
+    });
+
+    y += 4;
+    doc.line(ML,y,W-MR,y); y+=2;
+
+    footer();
+
+    // ── ELEKTRIK KRITERLER PAGE ──
+    newPage();
+
+    // Section header
+    function sectionHeader(title) {
+      checkY(14);
+      doc.setFillColor(...accentRGB);
+      doc.rect(ML, y, W-ML-MR, 9, 'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+      doc.setTextColor(255,255,255);
+      doc.text(trFix(title), ML+4, y+6);
+      y += 12;
+    }
+
+    function fieldRow(label, value, isLong) {
+      if(!value || !value.trim()) return;
+      const lines = doc.splitTextToSize(trFix(value), W-ML-MR-50);
+      const h = Math.max(10, lines.length*4.5+6);
+      checkY(h);
+      doc.setFillColor(...lightGray);
+      doc.rect(ML, y, W-ML-MR, h, 'F');
+      doc.setDrawColor(226,229,233); doc.setLineWidth(0.2);
+      doc.rect(ML, y, W-ML-MR, h, 'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...grayRGB);
+      doc.text(trFix(label), ML+3, y+5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...darkRGB);
+      doc.text(lines, ML+50, y+5);
+      y += h+1;
+    }
+
+    function optRow(label, val) {
+      if(!val) return;
+      checkY(9);
+      doc.setFillColor(...lightGray);
+      doc.rect(ML, y, W-ML-MR, 8, 'F');
+      doc.setDrawColor(226,229,233); doc.setLineWidth(0.2);
+      doc.rect(ML, y, W-ML-MR, 8, 'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...grayRGB);
+      doc.text(trFix(label), ML+3, y+5.5);
+      const isPos = ['evet','var','avm','merkezi','100'].includes(val);
+      const isNeg = ['hayir','yok'].includes(val);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      doc.setTextColor(isPos?22:isNeg?220:107, isPos?163:isNeg?38:114, isPos?74:isNeg?38:128);
+      doc.text(trFix(val.toUpperCase()), W-MR-3, y+5.5, {align:'right'});
+      y += 9;
+    }
+
+    sectionHeader('ELEKTRIK KRITERLER');
+
+    // 1. Enerji
+    checkY(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    doc.text('1. Enerji Temini', ML, y); y+=5;
+    doc.setDrawColor(...accentRGB); doc.setLineWidth(0.5); doc.line(ML,y,ML+40,y); y+=3;
+
+    optRow('Enerji Kaynagi', opts['e-1-1']);
+    fieldRow('Aciklama', document.getElementById('e-1-1-txt').value);
+    fieldRow('Temini Sekli', document.getElementById('e-1-2').value);
+    fieldRow('Salter Bilgisi', document.getElementById('e-1-3').value);
+    fieldRow('Besleme Kablosu', document.getElementById('e-1-4').value);
+    fieldRow('Genel Aciklama', document.getElementById('e-1-5').value);
+
+    y+=4;
+
+    // 2. Sayac
+    checkY(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    doc.text('2. Sayac ve Faturalandirma', ML, y); y+=5;
+    doc.setDrawColor(...accentRGB); doc.setLineWidth(0.5); doc.line(ML,y,ML+60,y); y+=3;
+    fieldRow('Sayac Yeri', document.getElementById('e-2-1').value);
+    fieldRow('Faturalandirma', document.getElementById('e-2-2').value);
+    fieldRow('Talep Edilen Sayac', document.getElementById('e-2-3').value);
+    y+=4;
+
+    // 3. Kompanzasyon
+    checkY(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    doc.text('3. Kompanzasyon', ML, y); y+=5;
+    doc.setDrawColor(...accentRGB); doc.setLineWidth(0.5); doc.line(ML,y,ML+40,y); y+=3;
+    optRow('Kompanzasyon Talebi', opts['e-3-1']);
+    fieldRow('Aciklama', document.getElementById('e-3-2').value);
+    y+=4;
+
+    // 4. Jenerator
+    checkY(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    doc.text('4. Jenerator', ML, y); y+=5;
+    doc.setDrawColor(...accentRGB); doc.setLineWidth(0.5); doc.line(ML,y,ML+30,y); y+=3;
+    optRow('Kapsam', opts['e-4-1']);
+    optRow('Besleme', opts['e-4-2']);
+    fieldRow('Aciklama', document.getElementById('e-4-3').value);
+    y+=4;
+
+    // 5. Zayif Akim
+    checkY(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    doc.text('5. Zayif Akim Sistemleri', ML, y); y+=5;
+    doc.setDrawColor(...accentRGB); doc.setLineWidth(0.5); doc.line(ML,y,ML+50,y); y+=3;
+    optRow('Zayif Akim Dag. Kutusu', opts['e-5-1']);
+    fieldRow('Aciklama', document.getElementById('e-5-1-txt').value);
+    optRow('Data – Telefon Altyapisi', opts['e-5-2']);
+    fieldRow('Aciklama', document.getElementById('e-5-2-txt').value);
+    optRow('Yangin Algilama', opts['e-5-3']);
+    fieldRow('Aciklama', document.getElementById('e-5-3-txt').value);
+    optRow('Acil Anons', opts['e-5-4']);
+    fieldRow('Aciklama', document.getElementById('e-5-4-txt').value);
+    y+=4;
+
+    // 6. Sonuclar
+    checkY(8);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...darkRGB);
+    doc.text('6. Diger Altyapi ve Sonuclar', ML, y); y+=5;
+    doc.setDrawColor(...accentRGB); doc.setLineWidth(0.5); doc.line(ML,y,ML+60,y); y+=3;
+    optRow('AVM Teknik Sartnamese', opts['e-6-1']);
+    fieldRow('Roleve Sonuclari', document.getElementById('e-6-2').value);
+    fieldRow('Ek Notlar', document.getElementById('e-6-3').value);
+
+    footer();
+
+    // ── PHOTOS ──
+    if(photos.length > 0) {
+      newPage();
+      doc.setFillColor(...accentRGB);
+      doc.rect(ML,y,W-ML-MR,9,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
+      doc.text('FOTOGRAFLAR', ML+4, y+6);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7);
+      doc.text(`${photos.length} fotograf`, W-MR-3, y+6, {align:'right'});
+      y += 13;
+
+      const cols=2, cellW=(W-ML-MR-4)/2, cellH=cellW*0.72;
+      let col=0;
+      for(let i=0;i<photos.length;i++){
+        if(col===0) checkY(cellH+10);
+        const px = ML + col*(cellW+4);
+        doc.setFillColor(245,246,248);
+        doc.roundedRect(px,y,cellW,cellH,2,2,'F');
+        doc.setDrawColor(226,229,233); doc.setLineWidth(0.3);
+        doc.roundedRect(px,y,cellW,cellH,2,2,'S');
+        try { doc.addImage(photos[i].pdfUrl||photos[i].dataUrl,'JPEG',px+1,y+1,cellW-2,cellH-9); } catch(e){}
+        doc.setFillColor(240,241,243);
+        doc.rect(px+1,y+cellH-8,cellW-2,7,'F');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...accentRGB);
+        doc.text(trFix(photos[i].caption||`F${i+1}`), px+4, y+cellH-3.5);
+        col++;
+        if(col>=cols){ col=0; y+=cellH+6; }
+      }
+      footer();
+    }
+
+    const proj = trFix(document.getElementById('f-proje').value||'roleve');
+    const tarih = document.getElementById('f-roleve-tarih').value||new Date().toISOString().split('T')[0];
+    doc.save(`${proj}_${tarih}_elektrik_roleve.pdf`);
+    closeModal();
+  } catch(err) {
+    document.getElementById('modalContent').innerHTML =
+      `<h3 style="color:var(--red)">Hata</h3><p>${err.message}</p>
+       <button class="btn btn-secondary" onclick="closeModal()" style="width:100%;margin-top:12px">Kapat</button>`;
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.getElementById('f-roleve-tarih').value = new Date().toISOString().split('T')[0];
+document.getElementById('f-yayin-tarih').value = new Date().toISOString().split('T')[0];
+updateProgress();
+</script>
+</body>
+</html>
