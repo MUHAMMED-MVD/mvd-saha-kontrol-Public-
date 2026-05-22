@@ -1,5 +1,6 @@
 const CACHE = 'mvd-v1';
-const ASSETS = ['index.html','manifest.json','app-icon.png','icon-192.png','icon-512.png','screenshot.png'];
+const P = '/mvd-saha-kontrol-Public-/';
+const ASSETS = [P+'index.html',P+'manifest.json',P+'app-icon.png',P+'icon-192.png',P+'icon-512.png',P+'screenshot.png'];
 self.addEventListener('install', e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
