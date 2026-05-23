@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GRATİS – Elektrik Açılış Kontrol Formu</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #f3f0f7;
+    --surface: #ffffff;
+    --surface2: #f8f6fb;
+    --border: #ddd6ec;
+    --accent: #5C2D91;
+    --accent2: #E6B800;
+    --green: #16a34a;
+    --red: #dc2626;
+    --gray: #6b7280;
+    --text: #1e1033;
+    --text2: #7c6fa0;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  .header {
+    background: var(--accent);
+    border-bottom: 3px solid var(--accent2);
+    padding: 14px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(92,45,145,0.25);
+  }
+  .header-logo {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 3px;
+  }
+  .header-title {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+  }
+
+  .meta-section {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .meta-item label {
+    display: block;
+    font-size: 10px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+  }
+  .meta-item input, .meta-item select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: var(--sans);
+    border-radius: 4px;
+    outline: none;
+  }
+  .meta-item input:focus, .meta-item select:focus {
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .meta-item.full { grid-column: 1 / -1; }
+
+  .progress-bar-wrap {
+    background: var(--surface);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .progress-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+
+  .section {
+    margin: 12px 12px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(92,45,145,0.07);
+  }
+  .section-header {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(230,184,0,0.1);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .section-name {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .section-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--border);
+    color: var(--text2);
+  }
+  .section-badge.complete {
+    background: rgba(34,197,94,0.15);
+    color: var(--green);
+  }
+  .section-toggle {
+    font-size: 16px;
+    color: var(--text2);
+    transition: transform 0.2s;
+  }
+  .section-toggle.open { transform: rotate(180deg); }
+  .section-body { display: none; }
+  .section-body.open { display: block; }
+
+  .question {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .question:last-child { border-bottom: none; }
+  .question-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .opt-btn {
+    padding: 8px 4px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--text2);
+    font-family: var(--mono);
+    font-size: 11px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .opt-btn:active { transform: scale(0.97); }
+  .opt-btn.selected-uygun {
+    border-color: var(--green);
+    background: rgba(22,163,74,0.10);
+    color: var(--green);
+    font-weight: 600;
+  }
+  .opt-btn.selected-hayir {
+    border-color: var(--red);
+    background: rgba(239,68,68,0.12);
+    color: var(--red);
+    font-weight: 600;
+  }
+  .opt-btn.selected-na {
+    border-color: var(--gray);
+    background: rgba(107,114,128,0.12);
+    color: #9ca3af;
+    font-weight: 600;
+  }
+
+  .note-toggle {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text2);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+  }
+  .note-toggle:hover { color: var(--accent); }
+  .note-area {
+    margin-top: 6px;
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 8px;
+    border-radius: 4px;
+    resize: none;
+    display: none;
+    outline: none;
+    min-height: 60px;
+  }
+  .note-area:focus { border-color: var(--accent); }
+  .note-area.visible { display: block; }
+
+  .photo-section {
+    margin: 12px 12px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .photo-header {
+    background: rgba(92,45,145,0.05);
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .photo-header span { color: var(--accent); font-family: var(--mono); font-size: 11px; }
+  .photo-body { padding: 14px; }
+  .photo-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 12px;
+    background: #fff;
+  }
+  .photo-upload-area:hover { border-color: var(--accent); background: rgba(92,45,145,0.04); }
+  .photo-upload-area input { display: none; }
+  .photo-upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-upload-text { font-size: 12px; color: var(--text2); }
+  .photo-upload-sub { font-size: 10px; color: var(--gray); margin-top: 2px; font-family: var(--mono); }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .photo-thumb {
+    position: relative;
+    border-radius: 5px;
+    overflow: hidden;
+    aspect-ratio: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-remove {
+    position: absolute;
+    top: 3px; right: 3px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 20px; height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .photo-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 4px;
+    font-size: 9px;
+    color: #ccc;
+    font-family: var(--mono);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--surface);
+    border-top: 4px solid var(--accent);
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+  .btn {
+    flex: 1;
+    padding: 13px;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: #fff; flex: 2; }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px 16px 0 0;
+    border-top: 4px solid var(--accent);
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 20px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  .modal h3 { font-size: 15px; margin-bottom: 4px; }
+  .modal p { font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: var(--text2); font-size: 12px; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 10px;
+  }
+  .pill-green { background: rgba(34,197,94,0.15); color: var(--green); }
+  .pill-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  .pill-gray { background: rgba(107,114,128,0.15); color: var(--gray); }
+  .pill-orange { background: rgba(92,45,145,0.12); color: var(--accent); }
+
+  .generating {
+    text-align: center;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 2px solid var(--border);
+    scrollbar-width: none;
+    padding: 0 12px;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 10px 14px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text2);
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent2);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+    <div id="logoWrap" style="flex-shrink:0;">
+      <div id="logoPlaceholder" onclick="document.getElementById('logoInput').click()"
+        style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,0.15);border:2px dashed rgba(255,255,255,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;">
+        <span style="font-size:18px;">🖼</span>
+        <span style="font-size:8px;color:rgba(255,255,255,0.7);margin-top:1px;">LOGO</span>
+      </div>
+      <img id="logoImg" src="" alt="logo" style="display:none;width:48px;height:48px;border-radius:8px;object-fit:contain;background:#fff;padding:2px;cursor:pointer;" onclick="document.getElementById('logoInput').click()">
+      <input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="loadLogo(event)">
+    </div>
+    <div>
+      <div class="header-logo" id="brandName" contenteditable="true" spellcheck="false" title="Marka adını düzenle" style="outline:none;cursor:text;min-width:40px;border-bottom:1px dashed rgba(255,255,255,0.35);">GRATİS</div>
+      <div class="header-title">Elektrik Açılış Kontrol Formu</div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;">
+    <label for="accentPicker" style="font-size:8px;color:rgba(255,255,255,0.6);font-family:var(--mono);letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;">Renk</label>
+    <div style="position:relative;width:28px;height:28px;">
+      <div id="colorSwatch" style="width:28px;height:28px;border-radius:6px;border:2px solid rgba(255,255,255,0.4);background:#5C2D91;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="document.getElementById('accentPicker').click()">
+        <span style="font-size:14px;pointer-events:none;">🎨</span>
+      </div>
+      <input type="color" id="accentPicker" value="#5C2D91" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer;" oninput="changeAccent(this.value)">
+    </div>
+  </div>
+</div>
+
+<!-- META -->
+<div class="meta-section">
+  <div class="meta-grid">
+    <div class="meta-item full">
+      <label>Proje Adı</label>
+      <input type="text" id="m-proje" placeholder="Proje adı...">
+    </div>
+    <div class="meta-item full">
+      <label>Proje Adresi</label>
+      <input type="text" id="m-adres" placeholder="Adres...">
+    </div>
+    <div class="meta-item">
+      <label>Mağaza Tipi</label>
+      <select id="m-tip">
+        <option value="CADDE">CADDE</option>
+        <option value="AVM">AVM</option>
+      </select>
+    </div>
+    <div class="meta-item">
+      <label>Kontrol Tarihi</label>
+      <input type="date" id="m-tarih">
+    </div>
+    <div class="meta-item full">
+      <label>Proje Firma / Yüklenici</label>
+      <input type="text" id="m-firma" placeholder="Firma adı...">
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="progress-text" id="progressText">0 / 0 yanıtlandı</span>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">📋 Sorular</div>
+  <div class="tab" onclick="switchTab(1)">📷 Fotoğraflar</div>
+</div>
+
+<!-- TAB 0: QUESTIONS -->
+<div id="tab-0"></div>
+
+<!-- TAB 1: PHOTOS -->
+<div id="tab-1-photos" style="display:none;padding:12px;">
+  <div class="photo-section" style="margin:0;">
+    <div class="photo-header">📷 Kontrol Fotoğrafları <span>SAHADAN YÜKLE</span></div>
+    <div class="photo-body">
+      <div class="photo-upload-area" onclick="document.getElementById('photoInput').click()">
+        <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotos(event)">
+        <div class="photo-upload-icon">📸</div>
+        <div class="photo-upload-text">Fotoğraf ekle</div>
+        <div class="photo-upload-sub">Galeri veya kamera</div>
+      </div>
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="btn btn-secondary" onclick="clearAll()">🗑 SİL</button>
+  <button class="btn btn-primary" onclick="openSummary()">📄 PDF OLUŞTUR</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+// ── SECTIONS DATA (from Excel: ELEKTRİK İŞLERİ AÇILIŞ KONTROL FORMU) ────────
+const SECTIONS = [
+  {
+    name: "ACİL AYDINLATMA TESİSATI",
+    questions: [
+      "Acil aydınlatma sayısı ve yerleşimi projeye göre yapılmış mı?",
+      "Acil yönlendirme aydınlatma sayısı ve yerleşimi projeye göre yapılmış mı?",
+      "Acil yönlendirme aydınlatma simgeleri projeye göre yapılmış mı? Doğru mu?",
+      "Acil aydınlatma sistemi testleri yapıldı ve çalışıyor mu?",
+      "Pano üzerinde linye etiketleri doğru mudur? Bağımsız olarak linyeler tesis edilmiş midir?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "TAVAN ARASI AYDINLATMA TESİSATI",
+    questions: [
+      "Tavan arası aydınlatma sayısı ve yerleşimi projeye göre yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu?",
+      "Pano üzerinde linye etiketi doğru mudur? Bağımsız olarak linye tesis edilmiş midir?",
+      "Pano üzerinde tavan arası aydınlatma kapalı konumda mı?"
+    ]
+  },
+  {
+    name: "AYDINLATMA TESİSATI",
+    questions: [
+      "Aydınlatma sayısı ve yerleşimi projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu?",
+      "Pano üzerinde linye etiketleri doğru mudur? Bağımsız olarak linyeler tesis edilmiş midir? (Linye kontrolü yapılmalıdır)",
+      "Aydınlatma ürün montajları sağlıklı yapılmış mıdır?",
+      "Aydınlatma ürünleri temiz midir?",
+      "Paralel atlamalarda klemens kullanılmış mıdır? Paralel atlama kabloları spiral boru içinden yapılmış mıdır?",
+      "Aydınlatma kontrol anahtar montajları doğru yapılmış mıdır?",
+      "Kasa genel kontrol butonu tesis edilmiş midir? Montajı doğru yapılmış mıdır?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "DETAY AYDINLATMA TESİSATI",
+    questions: [
+      "Tüm raf aydınlatmalar çalışıyor mu?",
+      "Raf aydınlatma paralel hat atlamalarında proje ve şartnameye uygun imalat yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu?",
+      "Pano üzerinde linye etiketleri doğru mudur? Bağımsız olarak linyeler tesis edilmiş midir? (Linye kontrolü yapılmalıdır)",
+      "Paralel atlamalarda klemens kullanılmış mıdır? Paralel atlama kabloları spiral boru içinden yapılmış mıdır?",
+      "Raf aydınlatmalardan çalıştığında şalter atıyor mu?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "PRİZ TESİSATI",
+    questions: [
+      "Priz sayısı ve yerleşimleri projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu?",
+      "Pano üzerinde linye etiketleri doğru mudur? Bağımsız olarak linyeler tesis edilmiş midir? (Linye kontrolü yapılmalıdır)",
+      "Priz ürün montajları sağlıklı yapılmış mıdır?",
+      "Priz ürünleri temiz midir?",
+      "Paralel atlamalarda klemens kullanılmış mıdır? Paralel atlama kabloları spiral boru içinden yapılmış mıdır?",
+      "Depo alanı masa ve diğer prizler doğru tesis edilmiş midir?",
+      "Kasa priz blokları doğru şekilde yerine tesis edilmiş mi?",
+      "İlave kasa var mı? Priz bloğu tesis edilmiş mi?",
+      "Kepek veya kayar kapı var mı? Çalışır halde tesis edilmiş midir?",
+      "Kapı anten sistemi ünitesi çalışır halde tesis edilmiş midir?"
+    ]
+  },
+  {
+    name: "KUVVET – MEKANİK TESİSATI",
+    questions: [
+      "Mekanik cihaz sayısı ve yerleşimleri projeye uygun yapılmış mıdır?",
+      "Mekanik cihaz kumanda sayısı ve yerleşimleri projeye uygun yapılmış mıdır?",
+      "Pano üzerinde linye etiketleri doğru mudur? Bağımsız olarak linyeler tesis edilmiş midir? (Linye kontrolü yapılmalıdır)",
+      "Mekanik cihaz sayıları mekanik proje ile uyuşuyor mu? İlave cihaz kontrolü yapıldı mı?",
+      "Ana besleme ve topraklama kablosu uygun mu? Kesitleri proje ile uyuşuyor mu?",
+      "Ana besleme ve topraklama kablosunda ek var mı?",
+      "Sayaç, busbar vb. ana bağlantı noktası işleri tamamlanmış mı? Sağlıklı çalışıyor mu?",
+      "UPS cihazı devreye alınmış mı?",
+      "UPS cihazı kablo kesiti ve kablolama şekli doğru mu? Kablo koruma içinden tesis edilmiş mi? (Boru vb.)"
+    ]
+  },
+  {
+    name: "KABLO TAŞIMA TESİSATI",
+    questions: [
+      "Görünen alanlardaki kablo tavası ve merdivenlerin ek noktaları topraklaması uygun mu?",
+      "Açıkta kablo var mı? Tüm kablolar koruma içinden tesis edilmiş mi? (Boru vb.)",
+      "Pano, zayıf akım üniteleri ve şaftlarda kablo merdiveni uygun mu? Kablo reglajları yapıldı mı?",
+      "Pano, zayıf akım üniteleri ve şaftlarda kablo merdiveni kapak ile kapatılmış mı?",
+      "Kasa alanında kablolama alt yapısı uygun mu? İşçilik doğru yapılmış mı?",
+      "Oje standı alt yapı borulaması yapılmış mı?",
+      "Gel al kasa varsa kablolama alt yapısı uygun mu? İşçilik doğru yapılmış mı?",
+      "Kapı güvenlik anten kablolama alt yapısı uygun mu? İşçilik doğru yapılmış mı?",
+      "Projede olmayan ilgili bir alan için ilave bir kablo taşıma alt yapısı yapmaya gerek var mı?"
+    ]
+  },
+  {
+    name: "DATA – TELEFON TESİSATI",
+    questions: [
+      "Priz veya uç sayısı ve yerleşimleri projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu?",
+      "Etiketlemeler doğru mudur? Bağımsız olarak hatlar tesis edilmiş midir? (Etiket kontrolü yapılmalıdır)",
+      "Kablo türü uygun mu?",
+      "Priz ürün montajları sağlıklı yapılmış mıdır?",
+      "Priz ürünleri temiz midir?",
+      "Kasalar, gel al kasa, AP, depo masa, kişi sayma tüm montaj ürünleri tesis edilmiş mi?",
+      "Rack kabiyet tesisi doğru yapılmış mıdır? Kabiyet yerine sağlıklı montajlanmış mıdır?",
+      "Rack kabiyet iç dizaynı sağlıklı yapılmış mıdır? Raflar kullanılmış, düzenli bir dizayn yapılmış mıdır?",
+      "Rack kabiyet içinde eksik malzeme var mıdır? Belirtilmelidir.",
+      "AVM ZADK kutusu ve/veya caddede telefon kutusundan ana hat tesis edilmiş mi?"
+    ]
+  },
+  {
+    name: "YANGIN İHBAR TESİSATI",
+    questions: [
+      "Yangın ihbar montaj ürün sayısı ve yerleşimi projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu? Devreye alma evrakı kontrol edildi mi?",
+      "Yangın ihbar montaj ürün montajları sağlıklı yapılmış mıdır?",
+      "Yangın ihbar montaj ürünleri temiz midir?",
+      "Yangın ihbar paneli varsa yeri ve bağlantıları uygun mudur? Tesis şekli doğru mudur?",
+      "Projede buton, siren, kontrol modülü vb. bir cihaz varsa kablolaması yapılmış mı? Yeri uygun mu?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "CCTV TESİSATI",
+    questions: [
+      "CCTV montaj ürün sayısı ve yerleşimi projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu? Devreye alma evrakı kontrol edildi mi?",
+      "CCTV montaj ürün montajları sağlıklı yapılmış mıdır?",
+      "CCTV montaj ürünleri temiz midir?",
+      "Kayıt cihazı yeri ve bağlantıları uygun mudur? Tesis şekli doğru mudur?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "MÜZİK YAYIN TESİSATI",
+    questions: [
+      "Müzik yayın montaj ürün sayısı ve yerleşimi projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu? Devreye alma evrakı kontrol edildi mi?",
+      "Müzik yayın montaj ürün montajları sağlıklı yapılmış mıdır?",
+      "Müzik yayın montaj ürünleri temiz midir?",
+      "Amfi yeri ve bağlantıları uygun mudur? Tesis şekli doğru mudur?",
+      "Acil anons halinde ses kesme sistemi çalışıyor mu?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "ACİL ANONS TESİSATI",
+    questions: [
+      "Acil anons montaj ürün sayısı ve yerleşimi projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu? Devreye alma evrakı kontrol edildi mi?",
+      "Acil anons montaj ürün montajları sağlıklı yapılmış mıdır?",
+      "Acil anons montaj ürünleri temiz midir?",
+      "AVM ZADK kutusu bağlantıları yapılmış mıdır?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "GÜVENLİK TESİSATI",
+    questions: [
+      "Güvenlik montaj ürün sayısı ve yerleşimi projeye uygun yapılmış mıdır?",
+      "Testler yapıldı ve çalışıyor mu? Devreye alma evrakı kontrol edildi mi?",
+      "Güvenlik montaj ürün montajları sağlıklı yapılmış mıdır?",
+      "Güvenlik montaj ürünleri temiz midir?",
+      "Güvenlik paneli yeri ve bağlantıları uygun mudur? Tesis şekli doğru mudur?",
+      "Genel kontrolde ilave yapılmasına gerek var mıdır?"
+    ]
+  },
+  {
+    name: "İŞÇİLİK KONTROLLERİ",
+    questions: [
+      "Genel olarak tavan süperpoze projesine uygun montaj yapılmış mıdır? Tavan montajları sağlıklı yapılmış mıdır?",
+      "Genel olarak duvar ve masa süperpoze projesine uygun montaj yapılmış mıdır? Montajlar sağlıklı yapılmış mıdır?",
+      "Tavanda veya duvarda boşta kablo var mıdır?",
+      "Raf LED aydınlatmaları içinde kullanılan kablolar proje ve şartnameye uygun mudur? HF kablo kullanılmış mıdır?",
+      "Sıva üstü imalatlar varsa rijit boru kullanılmış mıdır?",
+      "Genel işçilik kalitesi şartname ve standartlara uygun mu?"
+    ]
+  },
+  {
+    name: "GENEL KONTROLLER",
+    questions: [
+      "Ana zayıf akım hat sistemleri devreye alınmış mıdır? Evraklar varsa kontrol edildi mi?",
+      "Enerji alımı ile ilgili sistemler devreye alınmış mıdır? Evraklar varsa kontrol edildi mi?",
+      "AVM'den enerji alınacaksa enerji alım noktası ile ilgili çalışmalar tamamlanmış mı?",
+      "Elektrik idaresinden enerji alınacaksa sayaç panosu ile ilgili çalışmalar tamamlanmış mı?",
+      "Genel elektrik temizlik yapılmış mı?",
+      "Firma yetkilisi sahada bulunmakta mı?"
+    ]
+  },
+  {
+    name: "PANO SİSTEMLERİ",
+    questions: [
+      "Pano yeri ve kapak yönleri uygun mudur?",
+      "Panolar sabitlenmiş midir?",
+      "Pano önünde izole halı tesis edilmiş midir?",
+      "Pano kapağı ve gövde topraklama kablosu var mıdır?",
+      "Pano içinde fan ve termostat tesis edilmiş midir?",
+      "Pano markası ve imalat detayları şartnameye uygun mudur?",
+      "Pano dış kapağı kilitlenebiliyor mu? İç kapaklar sağlıklı kapanıyor mu? Boşluk kapakları takılmış mı?",
+      "Pano kablo girişi reglajlar ve etiketlemeler yapıldı mı?",
+      "Pano klemens gözü genişliği ve kablo bağlantı işçiliği uygun mudur?",
+      "Pano klemens bağlantılarında papuç kullanılmış mıdır?",
+      "Pano topraklama ve nötr barası sağlıklı montajlanmış mıdır?",
+      "Ana pano kablo türü, kesiti ve renkleri doğru mudur?",
+      "Pano ana şalteri ve ana kaçak akım sistemi projeye uygun tesis edilmiş midir?",
+      "Pano içinde sayaç varsa sayaç ve akım trafosu varsa değerleri ve bağlantı şekilleri doğru mudur?",
+      "Pano girişinde parafudur tesisi yapılmış mıdır?",
+      "Sinyal lambaları doğru çalışıyor mu?",
+      "Pano etiketlemeleri projeye uygun yapılmış mı?",
+      "Pano içindeki kaçak akımlar projeye uygun tesis edilmiş mi? Sağlıklı çalışıyorlar mı?",
+      "Pano içindeki sigorta değerleri ve kesme akımları projeye uygun tesis edilmiş mi?",
+      "Aydınlatma sistemi kontrol kontaktörleri projeye uygun tesis edilmiş mi? Buton sistemi sağlıklı çalışıyor mu?",
+      "Detay aydınlatma sigortaları 1x16 B tipi olarak tesis edilmiş mi?",
+      "UPS sistemi nötr kesemli sigortalar ve pako sistemi tesis edilmiş mi? Doğru çalışıyor mu?",
+      "Kompanzasyon sistemi projeye uygun tesis edilmiş midir?",
+      "Kompanzasyon sistemi röle kontrolleri yapıldığında sağlıklı çalışıyor mu?",
+      "Kompanzasyon sistemi için iç ve dış pano sacında havalandırma delikleri bırakılmış mı?",
+      "Pano etrafında veya pano içinde kablo ile inşaat artığı için temizlik yapılmış mıdır?",
+      "Pano dış sacında bir hasar var mıdır?",
+      "Sayaç panosu varsa yeri uygun mudur?",
+      "Sayaç panosu bağımsızsa kapağı kilitlenebiliyor mu?",
+      "Sayaç panosu içindeki ana şalter, akım trafosu ve kaçak akım rölesi değerleri proje ile uyumlu mudur?",
+      "Elektrik idaresinden enerji alınıyorsa sayaç panosu mühürlenmiş midir?",
+      "AVM enerji alım noktası busbar, elektrik odası vb. imalatlar tamamlanmış mıdır? Projeye uygun mudur?",
+      "Şalt ürünleri projeye uygun tesis edilmiş mi?",
+      "Zaman saati mağaza konseptine göre ayarlanmış mı?",
+      "Faz dengesi projeye uygun mu?"
+    ]
+  }
+];
+
+// STATE
+const answers = {};
+const notes = {};
+const photos = [];
+
+// ── BUILD UI ────────────────────────────────────────────────────────────────
+function buildSections() {
+  const container = document.getElementById('tab-0');
+  SECTIONS.forEach((sec, sIdx) => {
+    const div = document.createElement('div');
+    div.className = 'section';
+    div.id = `sec-${sIdx}`;
+
+    let questionsHTML = '';
+    sec.questions.forEach((q, qIdx) => {
+      questionsHTML += `
+        <div class="question" id="q-${sIdx}-${qIdx}">
+          <div class="question-text">${qIdx+1}. ${q}</div>
+          <div class="options">
+            <button class="opt-btn" onclick="setAnswer(${sIdx},${qIdx},'uygun')" id="btn-${sIdx}-${qIdx}-uygun">✓ UYGUN</button>
+            <button class="opt-btn" onclick="setAnswer(${sIdx},${qIdx},'hayir')" id="btn-${sIdx}-${qIdx}-hayir">✗ UYGUN DEĞİL</button>
+            <button class="opt-btn" onclick="setAnswer(${sIdx},${qIdx},'na')" id="btn-${sIdx}-${qIdx}-na">— N/A</button>
+          </div>
+          <span class="note-toggle" onclick="toggleNote(${sIdx},${qIdx})">✏ not ekle</span>
+          <textarea class="note-area" id="note-${sIdx}-${qIdx}" placeholder="Açıklama..." oninput="saveNote(${sIdx},${qIdx},this.value)"></textarea>
+        </div>`;
+    });
+
+    div.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${sIdx})">
+        <div class="section-header-left">
+          <span class="section-num">S${sIdx+1}</span>
+          <span class="section-name">${sec.name}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="section-badge" id="badge-${sIdx}">0/${sec.questions.length}</span>
+          <span class="section-toggle" id="toggle-${sIdx}">▾</span>
+        </div>
+      </div>
+      <div class="section-body open" id="body-${sIdx}">
+        ${questionsHTML}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function toggleSection(sIdx) {
+  const body = document.getElementById(`body-${sIdx}`);
+  const tog = document.getElementById(`toggle-${sIdx}`);
+  body.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+
+function setAnswer(sIdx, qIdx, val) {
+  const key = `s${sIdx}_q${qIdx}`;
+  const prev = answers[key];
+  if (prev === val) {
+    delete answers[key];
+    ['uygun','hayir','na'].forEach(v => {
+      document.getElementById(`btn-${sIdx}-${qIdx}-${v}`).className = 'opt-btn';
+    });
+  } else {
+    answers[key] = val;
+    ['uygun','hayir','na'].forEach(v => {
+      const btn = document.getElementById(`btn-${sIdx}-${qIdx}-${v}`);
+      btn.className = 'opt-btn' + (v === val ? ` selected-${v}` : '');
+    });
+  }
+  updateProgress();
+  updateBadge(sIdx);
+}
+
+function toggleNote(sIdx, qIdx) {
+  const ta = document.getElementById(`note-${sIdx}-${qIdx}`);
+  ta.classList.toggle('visible');
+  if (ta.classList.contains('visible')) ta.focus();
+}
+
+function saveNote(sIdx, qIdx, val) {
+  notes[`s${sIdx}_q${qIdx}`] = val;
+}
+
+function updateProgress() {
+  const total = SECTIONS.reduce((a, s) => a + s.questions.length, 0);
+  const done = Object.keys(answers).length;
+  const pct = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${done} / ${total} yanıtlandı`;
+}
+
+function updateBadge(sIdx) {
+  const sec = SECTIONS[sIdx];
+  const done = sec.questions.filter((_, qIdx) => answers[`s${sIdx}_q${qIdx}`]).length;
+  const badge = document.getElementById(`badge-${sIdx}`);
+  badge.textContent = `${done}/${sec.questions.length}`;
+  badge.className = done === sec.questions.length ? 'section-badge complete' : 'section-badge';
+}
+
+// ── PHOTOS ──────────────────────────────────────────────────────────────────
+function compressImage(dataUrl, maxW, maxH, quality, callback) {
+  const img = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    if (w > maxW || h > maxH) {
+      const ratio = Math.min(maxW / w, maxH / h);
+      w = Math.round(w * ratio); h = Math.round(h * ratio);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
+}
+
+function handlePhotos(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      compressImage(ev.target.result, 400, 400, 0.7, thumb => {
+        compressImage(ev.target.result, 1200, 1200, 0.5, pdf => {
+          photos.push({ dataUrl: thumb, pdfUrl: pdf, name: file.name });
+          renderPhotoGrid();
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = photos.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p.dataUrl}" alt="foto ${i+1}">
+      <button class="photo-remove" onclick="removePhoto(${i})">×</button>
+      <div class="photo-caption">F${i+1}</div>
+    </div>`).join('');
+}
+
+function removePhoto(i) {
+  photos.splice(i, 1);
+  renderPhotoGrid();
+}
+
+// ── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+  document.getElementById('tab-0').style.display = idx === 0 ? 'block' : 'none';
+  document.getElementById('tab-1-photos').style.display = idx === 1 ? 'block' : 'none';
+}
+
+// ── SUMMARY / MODAL ──────────────────────────────────────────────────────────
+function openSummary() {
+  const total = SECTIONS.reduce((a, s) => a + s.questions.length, 0);
+  const done = Object.keys(answers).length;
+  const uygun = Object.values(answers).filter(v => v === 'uygun').length;
+  const hayir = Object.values(answers).filter(v => v === 'hayir').length;
+  const na = Object.values(answers).filter(v => v === 'na').length;
+
+  document.getElementById('modalContent').innerHTML = `
+    <h3>📋 Kontrol Özeti</h3>
+    <p>PDF oluşturmadan önce özeti inceleyin</p>
+    <div class="summary-row">
+      <span class="summary-label">Toplam Soru</span>
+      <span class="pill pill-orange">${total}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Yanıtlanan</span>
+      <span class="pill pill-orange">${done} / ${total}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">✓ Uygun</span>
+      <span class="pill pill-green">${uygun}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">✗ Uygun Değil</span>
+      <span class="pill pill-red">${hayir}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">— N/A</span>
+      <span class="pill pill-gray">${na}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">📷 Fotoğraf</span>
+      <span class="pill pill-orange">${photos.length} adet</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;">
+      <button class="btn btn-secondary" onclick="closeModal()" style="flex:1">Geri Dön</button>
+      <button class="btn btn-primary" onclick="generatePDF()" style="flex:2">📄 PDF İndir</button>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function clearAll() {
+  if (!confirm('Tüm cevaplar silinsin mi?')) return;
+  Object.keys(answers).forEach(k => delete answers[k]);
+  Object.keys(notes).forEach(k => delete notes[k]);
+  SECTIONS.forEach((sec, sIdx) => {
+    sec.questions.forEach((_, qIdx) => {
+      ['uygun','hayir','na'].forEach(v => {
+        const btn = document.getElementById(`btn-${sIdx}-${qIdx}-${v}`);
+        if (btn) btn.className = 'opt-btn';
+      });
+      const ta = document.getElementById(`note-${sIdx}-${qIdx}`);
+      if (ta) { ta.value = ''; ta.classList.remove('visible'); }
+    });
+    updateBadge(sIdx);
+  });
+  updateProgress();
+}
+
+// ── PDF GENERATION ───────────────────────────────────────────────────────────
+function trFix(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/İ/g, 'I').replace(/ı/g, 'i')
+    .replace(/Ğ/g, 'G').replace(/ğ/g, 'g')
+    .replace(/Ş/g, 'S').replace(/ş/g, 's')
+    .replace(/Ü/g, 'U').replace(/ü/g, 'u')
+    .replace(/Ö/g, 'O').replace(/ö/g, 'o')
+    .replace(/Ç/g, 'C').replace(/ç/g, 'c');
+}
+
+async function generatePDF() {
+  document.getElementById('modalContent').innerHTML = `
+    <div class="generating">
+      <div class="spinner"></div>
+      PDF hazirlaniyor...<br>
+      <small style="color:var(--gray)">Fotograflar isleniyor</small>
+    </div>`;
+
+  await new Promise(r => setTimeout(r, 100));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+
+    // Get current brand name and accent color
+    const brandName = (document.getElementById('brandName').textContent || 'GRATİS').trim();
+    const pickerHex = document.getElementById('accentPicker').value;
+    const acR = parseInt(pickerHex.slice(1,3),16);
+    const acG = parseInt(pickerHex.slice(3,5),16);
+    const acB = parseInt(pickerHex.slice(5,7),16);
+
+    const W = 210, H = 297;
+    const ML = 14, MR = 14, MT = 14;
+    let y = MT;
+
+    const colors = {
+      orange: [acR, acG, acB],
+      dark: [Math.max(0,acR-62), Math.max(0,acG-62), Math.max(0,acB-20)],
+      surface: [Math.max(0,acR-44), Math.max(0,acG-21), Math.max(0,acB+31)],
+      surface2: [Math.max(0,acR-30), Math.max(0,acG-13), Math.max(0,acB+51)],
+      border: [100, 70, 150],
+      text: [240, 240, 240],
+      text2: [190, 170, 220],
+      green: [34, 197, 94],
+      red: [239, 68, 68],
+      gray: [150, 130, 180],
+      white: [255, 255, 255],
+      yellow: [230, 184, 0]
+    };
+
+    function newPage() {
+      doc.addPage();
+      y = MT;
+      doc.setFillColor(...colors.dark);
+      doc.rect(0, 0, W, H, 'F');
+      addFooter();
+    }
+
+    function addFooter() {
+      const pg = doc.internal.getCurrentPageInfo().pageNumber;
+      doc.setFillColor(...colors.surface);
+      doc.rect(0, H - 8, W, 8, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(...colors.text2);
+      doc.text(trFix(brandName + ' – Elektrik Isleri Acilis Kontrol Formu'), ML, H - 3);
+      doc.text(trFix(`Sayfa ${pg}`), W - ML, H - 3, { align: 'right' });
+      doc.text(trFix('MA.01022021-R2'), W/2, H-3, { align: 'center' });
+    }
+
+    function checkY(needed) {
+      if (y + needed > H - 15) newPage();
+    }
+
+    // ── COVER PAGE ──
+    doc.setFillColor(...colors.dark);
+    doc.rect(0, 0, W, H, 'F');
+    doc.setFillColor(...colors.orange);
+    doc.rect(0, 0, W, 2, 'F');
+    doc.setFillColor(...colors.surface);
+    doc.rect(0, 0, W, 60, 'F');
+    doc.setFillColor(...colors.orange);
+    doc.rect(0, 58, W, 2, 'F');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(32);
+    doc.setTextColor(...colors.orange);
+    doc.text(trFix(brandName), W/2, 28, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.text2);
+    doc.setFont('helvetica', 'normal');
+    doc.text(trFix('ELEKTRIK ISLERI ACILIS KONTROL FORMU'), W/2, 38, { align: 'center' });
+
+    const meta = [
+      ['PROJE ADI', document.getElementById('m-proje').value || '–'],
+      ['ADRES', document.getElementById('m-adres').value || '–'],
+      ['MAGAZA TIPI', document.getElementById('m-tip').value || '–'],
+      ['PROJE FIRMA / YUKLENICI', document.getElementById('m-firma').value || '–'],
+      ['TARIH', document.getElementById('m-tarih').value || '–'],
+    ];
+
+    let my = 75;
+    meta.forEach(([label, val]) => {
+      doc.setFillColor(...colors.surface2);
+      doc.roundedRect(ML, my, W-ML-MR, 9, 1, 1, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...colors.orange);
+      doc.text(trFix(label), ML+3, my+5.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...colors.text);
+      doc.text(trFix(val), ML+55, my+5.5);
+      my += 11;
+    });
+
+    const total = SECTIONS.reduce((a,s)=>a+s.questions.length,0);
+    const uygunC = Object.values(answers).filter(v=>v==='uygun').length;
+    const hayirC = Object.values(answers).filter(v=>v==='hayir').length;
+    const naC = Object.values(answers).filter(v=>v==='na').length;
+    const doneC = uygunC+hayirC+naC;
+
+    my += 10;
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.text2);
+    doc.text(trFix('KONTROL OZETI'), ML, my);
+    my += 5;
+
+    const stats = [
+      { label:'Toplam Soru', val:total, color: colors.orange },
+      { label:'Yanitlanan', val:`${doneC}/${total}`, color: colors.orange },
+      { label:'Uygun', val: uygunC, color: colors.green },
+      { label:'Uygun Degil', val: hayirC, color: colors.red },
+      { label:'N/A', val: naC, color: colors.gray },
+      { label:'Fotograf', val: photos.length, color: colors.orange },
+    ];
+
+    const bw = (W-ML-MR)/3 - 2;
+    stats.forEach((s, i) => {
+      const bx = ML + (i%3)*(bw+3);
+      const by = my + Math.floor(i/3)*14;
+      doc.setFillColor(...colors.surface2);
+      doc.roundedRect(bx, by, bw, 12, 1,1,'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(13);
+      doc.setTextColor(...s.color);
+      doc.text(trFix(String(s.val)), bx+bw/2, by+8, {align:'center'});
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(6);
+      doc.setTextColor(...colors.text2);
+      doc.text(trFix(s.label).toUpperCase(), bx+bw/2, by+11.5, {align:'center'});
+    });
+
+    addFooter();
+
+    // ── QUESTIONS PAGES ──
+    newPage();
+
+    const labelMap = { uygun:'✓ UYGUN', hayir:'✗ UYGUN DEGIL', na:'— N/A' };
+    const colorMap = { uygun: colors.green, hayir: colors.red, na: colors.gray };
+
+    SECTIONS.forEach((sec, sIdx) => {
+      checkY(20);
+
+      doc.setFillColor(...colors.surface2);
+      doc.rect(ML, y, W-ML-MR, 9, 'F');
+      doc.setFillColor(...colors.orange);
+      doc.rect(ML, y, 3, 9, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...colors.orange);
+      doc.text(`S${sIdx+1}`, ML+6, y+5.5);
+      doc.setTextColor(...colors.text);
+      doc.text(trFix(sec.name), ML+14, y+5.5);
+
+      const done = sec.questions.filter((_,qi)=>answers[`s${sIdx}_q${qi}`]).length;
+      const badgeColor = done===sec.questions.length ? colors.green : colors.text2;
+      doc.setTextColor(...badgeColor);
+      doc.setFontSize(7);
+      doc.text(trFix(`${done}/${sec.questions.length}`), W-MR-2, y+5.5, {align:'right'});
+      y += 11;
+
+      sec.questions.forEach((q, qIdx) => {
+        const key = `s${sIdx}_q${qIdx}`;
+        const ans = answers[key];
+        const note = notes[key] || '';
+
+        const qLines = doc.splitTextToSize(trFix(`${qIdx+1}. ${q}`), W-ML-MR-40);
+        const rowH = Math.max(10, qLines.length * 4.5 + (note ? 5 : 2));
+        checkY(rowH);
+
+        doc.setFillColor(qIdx%2===0 ? 22 : 26, qIdx%2===0 ? 10 : 14, qIdx%2===0 ? 38 : 44);
+        doc.rect(ML, y, W-ML-MR, rowH, 'F');
+
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...colors.text);
+        doc.text(qLines.map(trFix), ML+3, y+4.5);
+
+        if (ans) {
+          doc.setFont('helvetica','bold');
+          doc.setFontSize(7);
+          doc.setTextColor(...colorMap[ans]);
+          doc.text(trFix(labelMap[ans]), W-MR-3, y+5, {align:'right'});
+        } else {
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(7);
+          doc.setTextColor(...colors.gray);
+          doc.text(trFix('—'), W-MR-3, y+5, {align:'right'});
+        }
+
+        if (note) {
+          doc.setFont('helvetica','italic');
+          doc.setFontSize(6.5);
+          doc.setTextColor(...colors.text2);
+          const noteLines = doc.splitTextToSize(trFix('Not: ' + note), W-ML-MR-40);
+          doc.text(noteLines.map(trFix), ML+3, y+rowH-3);
+        }
+
+        doc.setDrawColor(...colors.border);
+        doc.setLineWidth(0.2);
+        doc.line(ML, y+rowH, W-MR, y+rowH);
+        y += rowH;
+      });
+
+      y += 4;
+    });
+
+    // ── PHOTO PAGES ──
+    if (photos.length > 0) {
+      newPage();
+      doc.setFillColor(...colors.surface);
+      doc.rect(0, MT, W, 10, 'F');
+      doc.setFillColor(...colors.orange);
+      doc.rect(0, MT, 3, 10, 'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(10);
+      doc.setTextColor(...colors.orange);
+      doc.text(trFix('KONTROL FOTOGRAFLARI'), ML+6, MT+6.5);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(8);
+      doc.setTextColor(...colors.text2);
+      doc.text(trFix(`${photos.length} fotograf`), W-MR, MT+6.5, {align:'right'});
+      y = MT + 14;
+
+      const cols = 2;
+      const cellW = (W-ML-MR-(cols-1)*4)/cols;
+      const cellH = cellW * 0.75;
+      let col = 0;
+
+      for (let i = 0; i < photos.length; i++) {
+        if (col === 0) checkY(cellH + 8);
+        const px = ML + col*(cellW+4);
+        doc.setFillColor(...colors.surface2);
+        doc.roundedRect(px, y, cellW, cellH, 2,2,'F');
+        doc.setDrawColor(...colors.border);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(px, y, cellW, cellH, 2,2,'S');
+        try {
+          doc.addImage(photos[i].pdfUrl || photos[i].dataUrl, 'JPEG', px+1, y+1, cellW-2, cellH-8);
+        } catch(e) {
+          doc.setTextColor(...colors.gray);
+          doc.setFontSize(8);
+          doc.text(trFix('[Gorsel]'), px+cellW/2, y+cellH/2, {align:'center'});
+        }
+        doc.setFillColor(20,20,20);
+        doc.rect(px+1, y+cellH-7.5, cellW-2, 7, 'F');
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...colors.orange);
+        doc.text(trFix(`F${i+1}`), px+4, y+cellH-3.5);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(...colors.text2);
+        const nameShort = photos[i].name.length > 30 ? photos[i].name.substring(0,27)+'...' : photos[i].name;
+        doc.text(trFix(nameShort), px+12, y+cellH-3.5);
+        col++;
+        if (col >= cols) { col = 0; y += cellH + 6; }
+      }
+    }
+
+    addFooter();
+
+    const proje = document.getElementById('m-proje').value || 'kontrol';
+    const tarih = document.getElementById('m-tarih').value || new Date().toISOString().split('T')[0];
+    doc.save(`${proje}_${tarih}_acilis_kontrol.pdf`);
+    closeModal();
+
+  } catch(err) {
+    document.getElementById('modalContent').innerHTML = `
+      <h3 style="color:var(--red)">Hata</h3>
+      <p>${err.message}</p>
+      <button class="btn btn-secondary" onclick="closeModal()" style="width:100%;margin-top:12px">Kapat</button>`;
+  }
+}
+
+// ── ACCENT COLOR ─────────────────────────────────────────────────────────────
+function changeAccent(hex) {
+  document.documentElement.style.setProperty('--accent', hex);
+  // Derive lighter bg tones from the accent
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  document.documentElement.style.setProperty('--bg', `rgb(${Math.min(255,r+195)},${Math.min(255,g+200)},${Math.min(255,b+190)})`);
+  document.documentElement.style.setProperty('--surface2', `rgb(${Math.min(255,r+215)},${Math.min(255,g+218)},${Math.min(255,b+210)})`);
+  document.documentElement.style.setProperty('--border', `rgb(${Math.min(255,r+180)},${Math.min(255,g+188)},${Math.min(255,b+175)})`);
+  document.documentElement.style.setProperty('--text', `rgb(${Math.max(0,r-40)},${Math.max(0,g-50)},${Math.max(0,b-20)})`);
+  document.documentElement.style.setProperty('--text2', `rgb(${Math.min(200,r+60)},${Math.min(180,g+50)},${Math.min(200,b+70)})`);
+  document.getElementById('colorSwatch').style.background = hex;
+  // Update header box shadow
+  document.querySelector('.header').style.boxShadow = `0 2px 8px rgba(${r},${g},${b},0.25)`;
+}
+
+// ── LOGO ─────────────────────────────────────────────────────────────────────
+let logoDataUrl = null;
+function loadLogo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logoDataUrl = ev.target.result;
+    document.getElementById('logoImg').src = logoDataUrl;
+    document.getElementById('logoImg').style.display = 'block';
+    document.getElementById('logoPlaceholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+// ── INIT ────────────────────────────────────────────────────────────────────
+document.getElementById('m-tarih').value = new Date().toISOString().split('T')[0];
+buildSections();
+updateProgress();
+document.getElementById('tab-0').style.display = 'block';
+const ph = document.getElementById('tab-1-photos');
+if (ph) ph.style.display = 'none';
+</script>
+</body>
+</html>
