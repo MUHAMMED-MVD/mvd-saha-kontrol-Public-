@@ -1,4 +1,4 @@
-const CACHE = 'mvd-v1';
+const CACHE = 'mvd-v2';
 const P = '/mvd-saha-kontrol-Public-/';
 const ASSETS = [P+'index.html',P+'manifest.json',P+'app-icon.png',P+'icon-192.png',P+'icon-512.png',P+'screenshot.png'];
 self.addEventListener('install', e => {
